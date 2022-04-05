@@ -6,18 +6,23 @@
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_GPS.h>
 
+// We now define the entirety of the Hardware namespace
 namespace Hardware
 {
+  // Declaring the instances of classes that will be used to interact with the various onboard hardwares.
+  // Also declaring and assigning a new bool variable which will keep track of whether or not the hardware is initialized.
   Adafruit_BMP3XX bmp;
   Adafruit_MPU6050 mpu;
   Adafruit_GPS GPS(&Serial2);
   bool initialized = false;
-
+  
+  // This ready() method will tell the other methods whether or not hardware is initialized to be pulled from
   bool ready()
   {
     return initialized;
   }
   
+  // This init() method will initialize all of the hardware, so it's ready to be pulled from
   void init()
   {
     Wire.begin();
@@ -28,11 +33,13 @@ namespace Hardware
     initialized = true;
   }
 
+  // This gps_fix() method will check if the MTK3339 (Ultimate GPS Breakout) can detect enough satellites to determine position
   bool gps_fix()
   {
     return (bool)digitalRead(GPS_FIX_PIN);
   }
 
+  // This read_gps() method will make sure that the GPS continues to read until it gets a complete reading
   void read_gps(GPS_Data &data)
   {
     // Loop until we have a full NMEA sentence and it parses successfully
@@ -42,13 +49,15 @@ namespace Hardware
         GPS.read();
       }
     } while (!GPS.parse(GPS.lastNMEA()));
-
+    
+    // Now we'll format the data into a neat format
     data.latitude = GPS.latitude;
     data.longitude = GPS.longitude;
     data.altitude = GPS.altitude;
     data.sats = (byte)(unsigned int)GPS.satellites;  // We do this double conversion to avoid signing issues
   }
-
+  
+  // Now we format the data into the telemetry format required by guidelines
   void write_radio(Downlink data)
   {
     String packet = String(data.milliseconds) + ","; //0
@@ -69,6 +78,7 @@ namespace Hardware
     XBEE_SERIAL.println(packet);
   }
 
+  // With this read_radio() method, we check to see if the data is being transmitted, and if so, we read it
   bool read_radio(String &data)
   {
     if (XBEE_SERIAL.available())
@@ -79,6 +89,7 @@ namespace Hardware
       return false;
   }
 
+  // With this read_sensors() method, we assign certain aspects of the data format to their respective sensor readings
   void read_sensors(Sensor_Data &data)
   {
     data.vbat = map(analogRead(VOLTAGE_PIN), 0, 1023, 0, 5.5);
