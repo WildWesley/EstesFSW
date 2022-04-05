@@ -5,11 +5,14 @@
 #include <Arduino.h>
 #include "Common.h"
 
+// We're declaring some classes that we'll use later for the hardware
 class Adafruit_BMP3XX;
 class Adafruit_MPU6050;
 class Adafruit_GPS;
 class String;
 
+// We're declaring some global objects of the classes just previously declared, we're also declaring some methods that we're going to be using later,
+// along with a few arguments that will be used in some of those methods
 namespace Hardware
 {
   extern Adafruit_BMP3XX bmp;
